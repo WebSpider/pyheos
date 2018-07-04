@@ -20,6 +20,7 @@ class HEOS(object):
         self._host = None
         self._port = None
 
+    @asyncio.coroutine
     async def connect(self, host=None, port=None, callback=None):
         """ Connect to HEOS """
 
@@ -31,9 +32,14 @@ class HEOS(object):
 
         yield from self._connect(self, host, port)
 
+    @asyncio.coroutine
     async def _connect(self, host, port):
         """ Perform legwork for connections """
         while True:
-            self._reader, self._writer = yield from asyncio.open_connection(host=host, port=port)
-            return
+            try:
+                self._reader, self._writer = yield from asyncio.open_connection(host=host, port=port)
+                return
+            except (TimeoutError, ConnectionRefusedError):
+                return
+
 
