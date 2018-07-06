@@ -84,5 +84,40 @@ COMMAND_REGISTRY = {
     'CMD_GET_GROUP_MUTE': 'group/get_mute',
     'CMD_SET_GROUP_MUTE': 'group/set_mute',
     'CMD_TOGGLE_GROUP_MUTE': 'group/toggle_mute',
-    'CMD_'
+    'CMD_GET_MUSIC_SOURCES': 'browse/get_music_sources',
+    'CMD_GET_SOURCE_INFO': 'browse/get_source_info',
+    'CMD_BROWSE_SOURCE': 'browse/browse',
+    'CMD_GET_SOURCE_SEARCH_CRITERIA': 'browse/get_search_criteria',
+    'CMD_SEARCH': 'browse/search',
+    'CMD_PLAY_STATION': 'browse/play_stream',
+    'CMD_PLAY_PRESET': 'browse/play_preset',
+    'CMD_PLAY_INPUT_SOURCE': 'browse/play_input',
+    'CMD_PLAY_URL': 'browse/play_stream',
+    'CMD_ADD_TRACK_TO_QUEUE': 'browse/add_to_queue',
+    'CMD_ADD_CONTAINER_TO_QUEUE': 'browse/add_to_queue',
+    'CMD_GET_HEOS_PLAYLISTS': 'browse/browse',
+    'CMD_RENAME_HEOS_PLAYLIST': 'browse/rename_playlist',
+    'CMD_DELETE_HEOS_PLAYLIST': 'browse/delete_playlist',
+    'CMD_GET_HEOS_HISTORY': 'browse/browse',
+    'CMD_RETRIEVE_ALBUM_METADATA': 'browse/retrieve_metadata',
+    'CMD_SET_SERVICE_OPTION': 'browse/set_service_option'
 }
+
+EVENT_REGISTRY = {
+    'EVENT_SOURCES_CHANGED': 'event/source_changed',
+    'EVENT_GROUPS_CHANGED': 'event/groups_changed',
+    'EVENT_PLAYERS_CHANGED': 'event/players_changed',
+    'EVENT_PLAYER_STATE_CHANGED': 'event/player_state_changed',
+    'EVENT_NOW_PLAYING_CHANGED': 'event/player_now_playing_changed',
+    'EVENT_NOW_PLAYING_PROGRESS': 'event/player_now_playing_progress',
+    'EVENT_PLAYBACK_ERROR': 'event/player_playback_error',
+    'EVENT_QUEUE_CHANGED': 'event/player_queue_changed',
+    'EVENT_VOLUME_CHANGED': 'event/player_volume_changed',
+    'EVENT_REPEAT_CHANGED': 'event/repeat_mode_changed',
+    'EVENT_SHUFFLE_CHANGED': 'event/shuffle_mode_changed',
+    'EVENT_GROUP_VOLUME_CHANGED': 'event/group_volume_changed',
+    'EVENT_USER_CHANGED': 'event/user_changed'
+}
+
+# Misc
+HEOS_CACHETIME = 900
