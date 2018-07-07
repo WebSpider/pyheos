@@ -10,7 +10,7 @@ from .constants import HEOS_PORT, HEOS_ST_NAME, HEOS_USERNAME, HEOS_PASSWORD, CO
 class HEOSException(Exception):
     """ Generic HEOS Exception class """
 
-    def __init__(self, errid, message):
+    def __init__(self, message, errid=0):
         self.message = message
         self.errorid = errid
 
@@ -30,7 +30,7 @@ class HEOS(object):
 
 
     @asyncio.coroutine
-    async def connect(self, host=None, port=HEOS_PORT, callback=None):
+    def connect(self, host=None, port=HEOS_PORT, callback=None):
         """ Connect to HEOS """
 
         if host is not None:
@@ -42,7 +42,7 @@ class HEOS(object):
         # Perform discovery if needed
         if not self._host:
             from .ssdp import discover
-            url = self._filter_ssdp_response(responses=discover(), st=HEOS_ST_NAME)
+            url = self._filter_ssdp_response(responses=discover(service=HEOS_ST_NAME), st=HEOS_ST_NAME)
             self._host = self._url_converter(url)
 
         yield from self._connect(self._host, port)
@@ -107,10 +107,6 @@ class HEOS(object):
         """ Request complete state from HEOS system """
         self._groups = self.get_groups(force_refresh)
         self._players = self.get_players(force_refresh)
-        for group in self._groups:
-            self._groupinfo[group['id']] = self.get_group_info(group['id'], force_refresh)
-        for player in self._players:
-            self._playerinfo[player['id']] = self.get_player_info(player['id'], force_refresh)
 
 
     @asyncio.coroutine
@@ -131,7 +127,7 @@ class HEOS(object):
             command = json.loads(incoming.decode())
 
             try:
-                self._parse_event(command)
+                self._parse_command(command)
 
             except HEOSException as e:
                 continue
@@ -139,12 +135,42 @@ class HEOS(object):
             if callback:
                 self._loop.create_task(self._perform_callback(callback))
 
-    def _handle_command(self, *args, **kwargs):
-        """ Generic wrapper to handle outgoing commands """
+    def _handle_command(self, complete_command, payload):
+        """ Generic wrapper to handle commands """
+        command_group, command = complete_command.split('/')
+        import
         raise NotImplementedError
 
-    def _parse_event(self, *args, **kwargs):
-        """ Parse event message """
+    def _parse_command(self, command):
+        """ Parse command message """
+        try:
+            inner_section = command['heos']
+            cmd = inner_section['command']
+            if 'result' in inner_section.keys() and inner_section['result'] == 'fail':
+                errid = inner_section['message'].split('&')[0].split('=')[1]
+                raise HEOSException(errid,inner_section['message'])
+
+            if 'payload' in command.keys():
+                self._handle_command(inner_section['command'], command['payload'])
+
+            elif 'message' in inner_section.keys():
+                message = self._parse_message(inner_section['message'])
+                self._handle_command(cmd, message)
+            else:
+                raise HEOSException(message='Incoming command incomplete. Payload and message are missing')
+        except HEOSException as e:
+            raise HEOSException(message='Problems were found `with command {}'.format(e))
+
+        return None
+
+    def _parse_message(self, message):
+        """ Parse message section """
+        try:
+            return dict(element.split('=') for element in message.split('&'))
+
+        except ValueError as e:
+            return {}
+
 
     def get_groups(self, force_refresh=False):
         """ Get group info """
@@ -179,5 +205,4 @@ class HEOS(object):
     @asyncio.coroutine
     def _perform_callback(self, callback=None):
         """ Execute callback """
-        if callback:
-
+        pass
