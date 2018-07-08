@@ -138,8 +138,19 @@ class HEOS(object):
     def _handle_command(self, complete_command, payload):
         """ Generic wrapper to handle commands """
         command_group, command = complete_command.split('/')
-        import
-        raise NotImplementedError
+        import importlib
+        module_to_import = 'pyheos.' + command_group
+
+        try:
+            myimport = importlib.import_module(module_to_import)
+        except ImportError as e:
+            raise
+
+        call = getattr(myimport, command)
+
+        retr = call(command, payload)
+
+        return retr
 
     def _parse_command(self, command):
         """ Parse command message """
@@ -151,13 +162,20 @@ class HEOS(object):
                 raise HEOSException(errid,inner_section['message'])
 
             if 'payload' in command.keys():
-                self._handle_command(inner_section['command'], command['payload'])
+                vals = self._handle_command(cmd, command['payload'])
 
             elif 'message' in inner_section.keys():
                 message = self._parse_message(inner_section['message'])
-                self._handle_command(cmd, message)
+                vals = self._handle_command(cmd, message)
+
             else:
                 raise HEOSException(message='Incoming command incomplete. Payload and message are missing')
+
+            # Process changes
+            if vals:
+                for k, v in vals.items():
+                    setattr(self, k, v)
+
         except HEOSException as e:
             raise HEOSException(message='Problems were found `with command {}'.format(e))
 
