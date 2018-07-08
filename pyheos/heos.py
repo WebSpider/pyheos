@@ -148,7 +148,7 @@ class HEOS(object):
 
         call = getattr(myimport, command)
 
-        retr = call(command, payload)
+        retr = call(self, command, payload)
 
         return retr
 

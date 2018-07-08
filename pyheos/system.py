@@ -1,10 +1,17 @@
-def register_for_change_events(command, data):
+import sys
+from pyheos import HEOSException
+
+def register_for_change_events(heosobj, command, data):
     """CLI 4.1.1"""
     value = data.split('=')[1]
-    return {command: value}
+    try:
+        setattr(heosobj, command, value)
+    except:
+        e = sys.exc_info()
+        raise HEOSException(message=e[1] + ": " + e[2])
 
 
-def check_account(command, data):
+def check_account(heosobj, command, data):
     """CLI 4.1.2"""
     status = data.split('&')
 
@@ -18,34 +25,41 @@ def check_account(command, data):
     if account_details and account_status == "signed_in":
         username = account_details.split('=')[1]
 
-    return {
-                command: account_status,
-                'heos_username': username
-           }
+    try:
+        setattr(heosobj, command, account_status)
+        setattr(heosobj, '_heos_username', username)
+
+    except:
+        e = sys.exc_info()
+        raise HEOSException(message=e[1] + ": " + e[2])
 
 
-def sign_in(command, data):
+def sign_in(heosobj, command, data):
     """CLI 4.1.3"""
-    return check_account(command, data)
+    check_account(heosobj, command, data)
 
 
-def sign_out(command, data):
+def sign_out(heosobj, command, data):
     """CLI 4.1.4"""
-    return check_account(command, data)
+    check_account(heosobj, command, data)
 
 
-def heart_beat(command, data):
+def heart_beat(heosobj, command, data):
     """CLI 4.1.5"""
     from datetime import datetime
-    return {'last_heartbeat': datetime.now()}
+    try:
+        setattr(heosobj, 'last_heartbeat', datetime.now()
+    except:
+        e = sys.exc_info()
+        raise HEOSException(message=e[1] + ": " + e[2])
 
 
-def reboot(command, data):
+def reboot(heosobj, command, data):
     """CLI 4.1.6"""
-    return
+    pass
 
 
-def prettify_json_response(command, data):
+def prettify_json_response(heosobj, command, data):
     """CLI 4.1.7"""
-    return register_for_change_events(command, data)
+    register_for_change_events(heosobj, command, data)
 

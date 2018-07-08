@@ -1,14 +1,17 @@
-def get_players(command, data):
+def get_players(heosobj, command, data):
     """CLI 4.2.1"""
 
     from datetime import datetime
 
-    return { 'players': data,
-             '_refresh_players': datetime.now()
-             }
+    try:
+        setattr(heosobj, 'players', data)
+        setattr(heosobj, '_refresh_players', datetime.now())
+    except:
+        e = sys.exc_info()
+        raise HEOSException(message=e[1] + ": " + e[2])
 
 
-def get_player_info(instance, command, data):
+def get_player_info(heosobj, command, data):
     """CLI 4.2.2"""
 
     all_player_info = instance.players
@@ -23,6 +26,11 @@ def get_player_info(instance, command, data):
 
     from datetime import datetime
 
-    return { 'players': new_player_info,
-             '_refresh_players': datetime.now()
-             }
+    try:
+        setattr(heosobj, 'players', new_player_info)
+        setattr(heosobj, '_refresh_players', datetime.now())
+    except:
+        e = sys.exc_info()
+        raise HEOSException(message=e[1] + ": " + e[2])
+
+
