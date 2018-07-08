@@ -7,6 +7,7 @@ import asyncio
 import json
 from .constants import HEOS_PORT, HEOS_ST_NAME, HEOS_USERNAME, HEOS_PASSWORD, COMMAND_REGISTRY, HEOS_CACHETIME
 
+
 class HEOSException(Exception):
     """ Generic HEOS Exception class """
 
@@ -27,7 +28,14 @@ class HEOS(object):
         self._refresh_players = datetime(1970, 1, 1)
         self._groups = {}
         self._players = {}
-
+        self._play_states = {}
+        self._heos_username = ""
+        self._account_status = ""
+        self._last_heartbeat = datetime(1970, 1, 1)
+        self._register_for_change_events = False
+        self._prettify_json_response = False
+        self._player_volumes = {}
+        self._player_mute = {}
 
     @asyncio.coroutine
     def connect(self, host=None, port=HEOS_PORT, callback=None):
@@ -95,7 +103,8 @@ class HEOS(object):
         """ Sets up callback handler for events"""
         if not register:
             payload = 'off'
-        else: payload = 'on'
+        else:
+            payload = 'on'
 
         self.send_command(COMMAND_REGISTRY['CMD_REGISTER_CHANGE_EVENTS'], {'enable': payload})
 
@@ -105,9 +114,8 @@ class HEOS(object):
 
     def get_heos_state(self, force_refresh=False):
         """ Request complete state from HEOS system """
-        self._groups = self.get_groups(force_refresh)
-        self._players = self.get_players(force_refresh)
-
+        self.get_groups(force_refresh)
+        self.get_players(force_refresh)
 
     @asyncio.coroutine
     def _subscribe(self, callback=None):
@@ -154,34 +162,31 @@ class HEOS(object):
 
     def _parse_command(self, command):
         """ Parse command message """
+        # TODO: Fix this to handle heos/message, payload and options
         try:
             inner_section = command['heos']
             cmd = inner_section['command']
             if 'result' in inner_section.keys() and inner_section['result'] == 'fail':
                 errid = inner_section['message'].split('&')[0].split('=')[1]
-                raise HEOSException(errid,inner_section['message'])
+                raise HEOSException(errid, inner_section['message'])
 
             if 'payload' in command.keys():
-                vals = self._handle_command(cmd, command['payload'])
+                self._handle_command(cmd, command['payload'])
 
             elif 'message' in inner_section.keys():
                 message = self._parse_message(inner_section['message'])
-                vals = self._handle_command(cmd, message)
+                self._handle_command(cmd, message)
 
             else:
                 raise HEOSException(message='Incoming command incomplete. Payload and message are missing')
-
-            # Process changes
-            if vals:
-                for k, v in vals.items():
-                    setattr(self, k, v)
 
         except HEOSException as e:
             raise HEOSException(message='Problems were found `with command {}'.format(e))
 
         return None
 
-    def _parse_message(self, message):
+    @staticmethod
+    def _parse_message(message):
         """ Parse message section """
         try:
             return dict(element.split('=') for element in message.split('&'))
@@ -224,3 +229,14 @@ class HEOS(object):
     def _perform_callback(self, callback=None):
         """ Execute callback """
         pass
+
+
+def get_message_parts(message):
+    parts = {}
+
+    elements = message.split('&')
+    for element in elements:
+        (k, v) = element.split('=')
+        parts[k] = v
+
+    return parts

@@ -5,7 +5,8 @@ def register_for_change_events(heosobj, command, data):
     """CLI 4.1.1"""
     value = data.split('=')[1]
     try:
-        setattr(heosobj, command, value)
+        attrname = '_' + command
+        setattr(heosobj, attrname, value)
     except:
         e = sys.exc_info()
         raise HEOSException(message=e[1] + ": " + e[2])
@@ -26,7 +27,7 @@ def check_account(heosobj, command, data):
         username = account_details.split('=')[1]
 
     try:
-        setattr(heosobj, command, account_status)
+        setattr(heosobj, '_account_status', account_status)
         setattr(heosobj, '_heos_username', username)
 
     except:
@@ -48,7 +49,7 @@ def heart_beat(heosobj, command, data):
     """CLI 4.1.5"""
     from datetime import datetime
     try:
-        setattr(heosobj, 'last_heartbeat', datetime.now()
+        setattr(heosobj, '_last_heartbeat', datetime.now())
     except:
         e = sys.exc_info()
         raise HEOSException(message=e[1] + ": " + e[2])
