@@ -36,6 +36,9 @@ class HEOS(object):
         self._prettify_json_response = False
         self._player_volumes = {}
         self._player_mute = {}
+        self._queue = []
+        self._quickselects = []
+        self._update_status = ""
 
     @asyncio.coroutine
     def connect(self, host=None, port=HEOS_PORT, callback=None):
@@ -231,12 +234,18 @@ class HEOS(object):
         pass
 
 
-def get_message_parts(message):
-    parts = {}
+def get_message_parts(message, parts=[]):
+
+    found_parts = {}
+    sections = {}
 
     elements = message.split('&')
     for element in elements:
         (k, v) = element.split('=')
-        parts[k] = v
+        sections[k] = v
 
-    return parts
+    for item in parts:
+        if item in sections.keys():
+            found_parts[item] = sections[item]
+
+    return found_parts
