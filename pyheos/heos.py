@@ -39,6 +39,7 @@ class HEOS(object):
         self._queue = []
         self._quickselects = []
         self._update_status = ""
+        self.groups = self._groups
 
     @asyncio.coroutine
     def connect(self, host=None, port=HEOS_PORT, callback=None):
@@ -233,6 +234,14 @@ class HEOS(object):
         """ Execute callback """
         pass
 
+
+    def save_groups(self, groups, time):
+        if isinstance(groups, dict) and groups:
+            setattr(self, '_groups', groups)
+            setattr(self, '_refresh_groups', time)
+            return True
+        else:
+            return False
 
 def get_message_parts(message, parts=[]):
 
