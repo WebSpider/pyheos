@@ -29,8 +29,10 @@ class HEOS(object):
         self._groups = {}
         self._players = {}
         self._play_states = {}
+        self._cur_play_state = {}
         self._heos_username = ""
         self._account_status = ""
+        self._sources = []
         self._last_heartbeat = datetime(1970, 1, 1)
         self._register_for_change_events = False
         self._prettify_json_response = False

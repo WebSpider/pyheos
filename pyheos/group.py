@@ -142,3 +142,15 @@ def get_mute(heosobj, command, data):
                                'state': state})
 
     heosobj.save_groups(new_groups, datetime.now())
+
+
+def set_mute(heosobj, command, data):
+    """CLI 4.3.9"""
+
+    return get_mute(heosobj, command, data)
+
+
+def toggle_mute(heosobj, command, data):
+    """CLI 4.3.10"""
+
+    pass
